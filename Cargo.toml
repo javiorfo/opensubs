@@ -1,0 +1,15 @@
+[package]
+name = "opensubs"
+version = "0.1.0"
+edition = "2024"
+description = "Minimal markup-based typesetting system for authors/writers"
+authors = ["Javier Orfo <javierorfo@protonmail.com>"]
+license = "MIT"
+repository = "https://github.com/javiorfo/opensubs"
+homepage = "https://github.com/javiorfo/opensubs#readme"
+keywords = ["subtitles", "opensubtitles.org", "subtitle finder"]
+
+[dependencies]
+reqwest = "0.12.20"
+scraper = "0.23.1"
+tokio = { version = "1.45.1", features = ["macros", "rt-multi-thread"] }
