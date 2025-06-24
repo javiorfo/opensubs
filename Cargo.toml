@@ -7,9 +7,15 @@ authors = ["Javier Orfo <javierorfo@protonmail.com>"]
 license = "MIT"
 repository = "https://github.com/javiorfo/opensubs"
 homepage = "https://github.com/javiorfo/opensubs#readme"
-keywords = ["subtitles", "opensubtitles.org", "subtitle finder"]
+keywords = ["subtitles", "opensubtitles.org", "subtitle-finder"]
 
 [dependencies]
-reqwest = "0.12.20"
+reqwest = { version = "0.12.20", features = ["blocking"], optional = true }
+tokio = { version = "1.45.1", features = ["macros", "rt-multi-thread"], optional = true }
 scraper = "0.23.1"
-tokio = { version = "1.45.1", features = ["macros", "rt-multi-thread"] }
+thiserror = "2.0.12"
+
+[features]
+default = ["async"]
+async = ["reqwest", "tokio"]
+blocking = ["reqwest"]

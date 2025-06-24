@@ -3,20 +3,15 @@ use scraper::{Html, Selector};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    //     let mut url = "https://www.opensubtitles.org/en/search2?MovieName=the+godfather+1972&id=8&action=search&SubLanguageID=eng&SubLanguageID=spa&SubLanguageID=spl&SubLanguageID=spa,spl,eng".to_string();
-    let mut url = "https://www.opensubtitles.org/en/search2?MovieName=the+holdovers+2023&id=8&action=search&SubLanguageID=spa&SubLanguageID=spl&SubLanguageID=spa,spl".to_string();
+    let mut url = "https://www.opensubtitles.org/en/search2?MovieName=the+godfather+1972&id=8&action=search&SubLanguageID=spa&SubLanguageID=spl&SubLanguageID=spa,spl".to_string();
+    //     let mut url = "https://www.opensubtitles.org/en/search2?MovieName=the+holdovers+2023&id=8&action=search&SubLanguageID=spa&SubLanguageID=spl&SubLanguageID=spa,spl".to_string();
 
-    let client = Client::builder()
-        .redirect(Policy::none())
-        .build()?;
+    let client = Client::builder().redirect(Policy::none()).build()?;
 
     loop {
         println!("Requesting URL: {}", url);
 
-        let response = client
-            .get(&url)
-            .send()
-            .await?;
+        let response = client.get(&url).send().await?;
 
         println!("Status: {}", response.status());
 
@@ -43,43 +38,87 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
 
-            // if Paginator fails
-            // get first results id
-            // https://www.opensubtitles.org/en/search/sublanguageid-all/idmovie-1196
-
             let table_selector = Selector::parse("table#search_results").unwrap();
 
-            let tr_selector = Selector::parse("tr").unwrap();
-            let td_selector = Selector::parse("td").unwrap();
+            let line_selector = Selector::parse("tr").unwrap();
+            let column_selector = Selector::parse("td").unwrap();
 
             if let Some(table) = document.select(&table_selector).next() {
-                for tr in table.select(&tr_selector).skip(1) {
-                    let header_text = tr
+                // skip 1 (table header)
+                for line in table.select(&line_selector).skip(1) {
+                    let id = match line.attr("id") {
+                        // Omit non-display items
+                        Some(id) if !id.contains("ihtr") => id.strip_prefix("name").unwrap_or(id),
+                        _ => continue,
+                    };
+
+                    let movie_name = line
                         .text()
-                        .take(2)
+                        .take(2) // Omit links in movie name
                         .filter(|text| !text.contains("Watch online"))
-                        .collect::<Vec<_>>()
-                        .join("");
+                        .collect::<Vec<_>>();
 
-                    let id = tr.attr("id").unwrap_or_default();
+                    println!("id {} Movie: {:?}", id, movie_name);
 
-                    if id.is_empty() || id.contains("ihtr") {
-                        continue;
-                    }
+                    // skip 1 (movie name and links)
+                    let mut data = line.select(&column_selector).skip(1);
+                    let lang = data
+                        .next()
+                        .and_then(|column| {
+                            column
+                                .first_child()
+                                .and_then(|child| child.value().as_element())
+                                .and_then(|element| element.attr("title"))
+                        })
+                        .unwrap_or("Not Available");
+                    println!("language: {}", lang);
 
-                    println!("id {} Header: {}", id, header_text);
-                    for (i, td) in tr.select(&td_selector).skip(1).enumerate() {
-                        if i == 0 {
-                            let lang = td.first_child().unwrap().value().as_element().unwrap().attr("title").unwrap();
-                            println!("lang: {:?}", lang);
-                        }
-                        let text = td.text().collect::<Vec<_>>().join(" ");
-                        println!("td: {}", text);
-                    }
-                    println!("++++++++++++++++++++++++++++++++++");
+                    let cd = match data.next() {
+                        Some(column) => column
+                            .text()
+                            .collect::<Vec<_>>()
+                            .join(" ")
+                            .trim()
+                            .to_string(),
+                        None => "".to_string(),
+                    };
+                    println!("cd: {}", cd);
+
+                    let date = match data.next() {
+                        Some(column) => column
+                            .text()
+                            .collect::<Vec<_>>()
+                            .join(" ")
+                            .trim()
+                            .to_string(),
+                        None => "".to_string(),
+                    };
+                    println!("date: {}", date);
+
+                    let downloads = match data.next() {
+                        Some(column) => column
+                            .text()
+                            .collect::<Vec<_>>()
+                            .first()
+                            .unwrap()
+                            .to_string()
+                            .replace("x", ""),
+                        None => "".to_string(),
+                    };
+                    println!("downloads: {}", downloads);
+
+                    let uploader = data.nth(3).and_then(|column| {
+                        let name = column
+                            .text()
+                            .collect::<Vec<_>>()
+                            .join(" ")
+                            .trim()
+                            .to_string();
+                        if name.is_empty() { None } else { Some(name) }
+                    });
+                    println!("uploader: {:?}", uploader);
+
                 }
-            } else {
-                println!("Table with id 'results' not found.");
             }
             break;
         }
