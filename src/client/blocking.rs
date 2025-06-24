@@ -1,8 +1,8 @@
 use reqwest::{blocking::Client, redirect::Policy};
 
-use crate::Result;
+use crate::core::Response;
 
-pub fn fetch_url() -> Result<String> {
+pub fn fetch_url() -> crate::Result<Response> {
     //     let mut url = "https://www.opensubtitles.org/en/search2?MovieName=the+godfather+1972&id=8&action=search&SubLanguageID=eng&SubLanguageID=spa&SubLanguageID=spl&SubLanguageID=spa,spl,eng".to_string();
     let mut url = "https://www.opensubtitles.org/en/search2?MovieName=the+holdovers+2023&id=8&action=search&SubLanguageID=spa&SubLanguageID=spl&SubLanguageID=spa,spl".to_string();
 
@@ -21,7 +21,7 @@ pub fn fetch_url() -> Result<String> {
                 println!("Redirecting to: {}", url);
             }
         } else {
-            return Ok(response.text()?);
+            return Ok(Response::create(&url, &response.text()?).unwrap());
         }
     }
 }

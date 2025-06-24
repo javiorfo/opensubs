@@ -1,62 +1,6 @@
+use super::model;
 use regex::Regex;
 use scraper::{Html, Selector};
-
-#[derive(Debug, Default)]
-pub struct Subtitle {
-    pub id: u64,
-    pub movie: String,
-    pub name: Option<String>,
-    pub language: String,
-    pub cd: String,
-    pub uploaded: String,
-    pub downloads: u32,
-    pub uploader: Option<String>,
-    pub download_link: String,
-}
-
-#[allow(clippy::too_many_arguments)]
-impl Subtitle {
-    pub fn new(
-        id: u64,
-        movie: String,
-        name: Option<String>,
-        language: String,
-        cd: String,
-        uploaded: String,
-        downloads: u32,
-        uploader: Option<String>,
-    ) -> Self {
-        Self {
-            id,
-            movie,
-            name,
-            language,
-            cd,
-            uploaded,
-            downloads,
-            uploader,
-            download_link: format!("https://dl.opensubtitles.org/en/download/sub/{}", id),
-        }
-    }
-}
-
-#[derive(Debug, Default)]
-pub struct Movie {
-    pub id: u64,
-    pub name: String,
-    pub subtitle_link: String,
-}
-
-impl Movie {
-    // https://www.opensubtitles.org/en/search/sublanguageid-spa,eng,spl/idmovie-1196
-    #[cfg(feature = "async")]
-    pub async fn get_subtitles(&self) -> crate::Result<()> {
-        Ok(())
-    }
-
-    #[cfg(feature = "blocking")]
-    pub fn get_subtitles2(&self) {}
-}
 
 #[derive(Debug, Default)]
 pub struct Page {
@@ -85,15 +29,15 @@ impl From<Option<String>> for Page {
                     }
                 }
             }
-            None => Self::default(),
+            _ => Self::default(),
         }
     }
 }
 
 #[derive(Debug)]
 pub enum Response {
-    Movie(Vec<Movie>),
-    Subtitle(Page, Vec<Subtitle>),
+    Movie(Vec<model::Movie>),
+    Subtitle(Page, Vec<model::Subtitle>),
 }
 
 impl Response {
@@ -169,12 +113,15 @@ impl Response {
                     let uploaded = data
                         .next()
                         .map(|column| {
-                            column
+                            let mut date = column
                                 .text()
                                 .collect::<Vec<_>>()
                                 .join(" ")
                                 .trim()
-                                .to_string()
+                                .to_string();
+                            // Takes only the date format DD/MM/YY
+                            date.truncate(8);
+                            date
                         })
                         .unwrap_or_default();
 
@@ -195,14 +142,37 @@ impl Response {
                         if name.is_empty() { None } else { Some(name) }
                     });
 
-                    subtitles.push(Subtitle::new(
+                    subtitles.push(model::Subtitle::new(
                         id, movie, name, language, cd, uploaded, downloads, uploader,
                     ));
                 }
             }
             Ok(Response::Subtitle(page, subtitles))
         } else {
-            Ok(Response::Movie(vec![]))
+            let mut movies = Vec::new();
+            if let Some(table) = document.select(&table_selector).next() {
+                // skip 1 (table header)
+                for line in table.select(&line_selector).skip(1) {
+                    let id: u64 = match line.attr("id") {
+                        Some(id) => id.strip_prefix("name").unwrap_or(id),
+                        _ => continue,
+                    }
+                    .parse()
+                    .unwrap_or_default();
+
+                    let name = line
+                        .text()
+                        .take(2) // Omit links in movie name
+                        .filter(|text| !text.contains("Watch online"))
+                        .collect::<Vec<_>>()
+                        .first()
+                        .map(|value| value.replace("\n", "").replace("\t", "").to_string())
+                        .unwrap_or_default();
+
+                    movies.push(model::Movie::new(id, name));
+                }
+            }
+            Ok(Response::Movie(movies))
         }
     }
 }

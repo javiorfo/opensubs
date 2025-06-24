@@ -1,13 +1,11 @@
 use reqwest::{Client, redirect::Policy};
 
-use crate::{Result, subtitle::Response};
+use crate::core::Response;
 
-pub async fn fetch_url() -> Result<Response> {
-    //     let mut url = "https://www.opensubtitles.org/en/search2?MovieName=the+godfather+1972&id=8&action=search&SubLanguageID=spa&SubLanguageID=spl&SubLanguageID=spa,spl".to_string();
+pub async fn fetch_url() -> crate::Result<Response> {
+    let mut url = "https://www.opensubtitles.org/en/search2?MovieName=the+godfather&id=8&action=search&SubLanguageID=spa,spl,eng".to_string();
     //     let mut url = "https://www.opensubtitles.org/en/search2?MovieName=the+holdovers+2023&id=8&action=search&SubLanguageID=spa&SubLanguageID=spl&SubLanguageID=spa,spl".to_string();
     //     https://www.opensubtitles.org/en/search2?MovieName=the godfather 1972&id=8&action=search&SubLanguageID=spa&SubLanguageID=spl&SubLanguageID=spa,spl&Season=&Episode=&SubSumCD=&Genre=&MovieByteSize=&MovieLanguage=&MovieImdbRatingSign=1&MovieImdbRating=&MovieCountry=&MovieYearSign=1&MovieYear=&MovieFPS=&SubFormat=&SubAddDate=&Uploader=&IDUser=&Translator=&IMDBID=&MovieHash=&IDMovie=
-    let mut url =
-        "https://www.opensubtitles.org/en/search/sublanguageid-all/idmovie-1196".to_string();
 
     let client = Client::builder().redirect(Policy::none()).build()?;
 

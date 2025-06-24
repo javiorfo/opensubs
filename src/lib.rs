@@ -1,5 +1,6 @@
 mod client;
-mod subtitle;
+mod core;
+mod filters;
 
 #[cfg(feature = "async")]
 pub use client::default;
