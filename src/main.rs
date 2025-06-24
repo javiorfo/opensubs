@@ -117,7 +117,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         if name.is_empty() { None } else { Some(name) }
                     });
                     println!("uploader: {:?}", uploader);
-
                 }
             }
             break;

@@ -18,10 +18,7 @@ pub fn fetch_url() -> Result<String> {
         if response.status().is_redirection() {
             if let Some(location) = response.headers().get(reqwest::header::LOCATION) {
                 url = location.to_str()?.to_string();
-                // si contiene imdbid va a los subs directamente, sino listado de posible matches
                 println!("Redirecting to: {}", url);
-            } else {
-                println!("Redirect status but no Location header");
             }
         } else {
             return Ok(response.text()?);

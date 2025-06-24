@@ -1,25 +1,25 @@
+use regex::Regex;
 use scraper::{Html, Selector};
-
-use crate::Result;
 
 #[derive(Debug, Default)]
 pub struct Subtitle {
-    id: u64,
-    movie: String,
-    name: String,
-    language: String,
-    cd: String,
-    uploaded: String,
-    downloads: u32,
-    uploader: Option<String>,
-    download_link: String,
+    pub id: u64,
+    pub movie: String,
+    pub name: Option<String>,
+    pub language: String,
+    pub cd: String,
+    pub uploaded: String,
+    pub downloads: u32,
+    pub uploader: Option<String>,
+    pub download_link: String,
 }
 
+#[allow(clippy::too_many_arguments)]
 impl Subtitle {
     pub fn new(
         id: u64,
         movie: String,
-        name: String,
+        name: Option<String>,
         language: String,
         cd: String,
         uploaded: String,
@@ -42,27 +42,78 @@ impl Subtitle {
 
 #[derive(Debug, Default)]
 pub struct Movie {
-    id: u64,
-    name: String,
-    subtitle_link: String,
+    pub id: u64,
+    pub name: String,
+    pub subtitle_link: String,
 }
-// https://www.opensubtitles.org/en/search/sublanguageid-spa,eng,spl/idmovie-1196
+
+impl Movie {
+    // https://www.opensubtitles.org/en/search/sublanguageid-spa,eng,spl/idmovie-1196
+    #[cfg(feature = "async")]
+    pub async fn get_subtitles(&self) -> crate::Result<()> {
+        Ok(())
+    }
+
+    #[cfg(feature = "blocking")]
+    pub fn get_subtitles2(&self) {}
+}
+
+#[derive(Debug, Default)]
+pub struct Page {
+    pub from: u32,
+    pub to: u32,
+    pub total: u32,
+}
+
+impl From<Option<String>> for Page {
+    fn from(value: Option<String>) -> Self {
+        match value {
+            Some(ref text) => {
+                let parsed_numbers = Regex::new(r"\d+(\.\d+)?")
+                    .expect("Error setting regex")
+                    .find_iter(text)
+                    .filter_map(|token| token.as_str().parse::<u32>().ok())
+                    .collect::<Vec<u32>>();
+
+                if parsed_numbers.len() < 3 {
+                    Self::default()
+                } else {
+                    Self {
+                        from: parsed_numbers[0],
+                        to: parsed_numbers[1],
+                        total: parsed_numbers[2],
+                    }
+                }
+            }
+            None => Self::default(),
+        }
+    }
+}
 
 #[derive(Debug)]
 pub enum Response {
     Movie(Vec<Movie>),
-    Subtitle(Vec<Subtitle>),
+    Subtitle(Page, Vec<Subtitle>),
 }
 
 impl Response {
-    pub(crate) fn create(url: &str, html: &str) -> Result<Self> {
+    pub(crate) fn create(url: &str, html: &str) -> crate::Result<Self> {
         let document = Html::parse_document(html);
 
         let table_selector = Selector::parse("table#search_results")?;
         let line_selector = Selector::parse("tr")?;
         let column_selector = Selector::parse("td")?;
 
-        if url.contains("imdbid") {
+        if url.contains("imdbid") || url.contains("idmovie") {
+            let page = match document.select(&Selector::parse("div#msg")?).next() {
+                Some(page) => page
+                    .select(&Selector::parse("span")?)
+                    .nth(1)
+                    .map(|page| page.text().collect::<Vec<_>>().join(" "))
+                    .into(),
+                None => Page::default(),
+            };
+
             let mut subtitles = Vec::new();
             if let Some(table) = document.select(&table_selector).next() {
                 // skip 1 (table header)
@@ -83,13 +134,12 @@ impl Response {
 
                     let movie = movie_text
                         .first()
-                        .map(|value| value.to_string())
+                        .map(|value| value.replace("\n", "").replace("\t", "").to_string())
                         .unwrap_or_default();
 
                     let name = movie_text
-                        .get(2)
-                        .map(|value| value.to_string())
-                        .unwrap_or_default();
+                        .get(1)
+                        .map(|value| value.replace("\n", "").replace("\t", "").to_string());
 
                     // skip 1 (movie name and links)
                     let mut data = line.select(&column_selector).skip(1);
@@ -104,25 +154,29 @@ impl Response {
                         .unwrap_or("Not Available")
                         .to_string();
 
-                    let cd = match data.next() {
-                        Some(column) => column
-                            .text()
-                            .collect::<Vec<_>>()
-                            .join(" ")
-                            .trim()
-                            .to_string(),
-                        None => "".to_string(),
-                    };
+                    let cd = data
+                        .next()
+                        .map(|column| {
+                            column
+                                .text()
+                                .collect::<Vec<_>>()
+                                .join(" ")
+                                .trim()
+                                .to_string()
+                        })
+                        .unwrap_or_default();
 
-                    let uploaded = match data.next() {
-                        Some(column) => column
-                            .text()
-                            .collect::<Vec<_>>()
-                            .join(" ")
-                            .trim()
-                            .to_string(),
-                        None => "".to_string(),
-                    };
+                    let uploaded = data
+                        .next()
+                        .map(|column| {
+                            column
+                                .text()
+                                .collect::<Vec<_>>()
+                                .join(" ")
+                                .trim()
+                                .to_string()
+                        })
+                        .unwrap_or_default();
 
                     let downloads: u32 = data
                         .next()
@@ -146,7 +200,7 @@ impl Response {
                     ));
                 }
             }
-            Ok(Response::Subtitle(subtitles))
+            Ok(Response::Subtitle(page, subtitles))
         } else {
             Ok(Response::Movie(vec![]))
         }

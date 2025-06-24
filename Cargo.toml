@@ -14,6 +14,7 @@ reqwest = { version = "0.12.20", features = ["blocking"], optional = true }
 tokio = { version = "1.45.1", features = ["macros", "rt-multi-thread"], optional = true }
 scraper = "0.23.1"
 thiserror = "2.0.12"
+regex = "1.11.1"
 
 [features]
 default = ["async"]
