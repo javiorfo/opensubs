@@ -1,10 +1,10 @@
 use reqwest::{blocking::Client, redirect::Policy};
 
-use crate::core::Response;
+use crate::{client::SearchBy, core::Response};
 
-pub fn fetch_url() -> crate::Result<Response> {
-    //     let mut url = "https://www.opensubtitles.org/en/search2?MovieName=the+godfather+1972&id=8&action=search&SubLanguageID=eng&SubLanguageID=spa&SubLanguageID=spl&SubLanguageID=spa,spl,eng".to_string();
-    let mut url = "https://www.opensubtitles.org/en/search2?MovieName=the+holdovers+2023&id=8&action=search&SubLanguageID=spa&SubLanguageID=spl&SubLanguageID=spa,spl".to_string();
+pub fn search(search_by: SearchBy<'_>) -> crate::Result<Response> {
+    let search_by = &search_by;
+    let mut url: String = search_by.into();
 
     let client = Client::builder().redirect(Policy::none()).build()?;
 
@@ -21,20 +21,30 @@ pub fn fetch_url() -> crate::Result<Response> {
                 println!("Redirecting to: {}", url);
             }
         } else {
-            return Ok(Response::create(&url, &response.text()?).unwrap());
+            let filter = match search_by {
+                SearchBy::MovieAndFilter(_, filter) => Some(filter),
+                _ => None,
+            };
+
+            return Response::create(&url, &response.text()?, filter);
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::fetch_url;
+    use super::search;
+    use crate::SearchBy;
 
     #[test]
     fn test_fetch_url() {
-        let result = fetch_url();
-        assert!(result.is_ok());
-        let body = result;
-        assert!(body.is_ok());
+        let result = search(SearchBy::MovieAndFilter(
+            "holdovers",
+            crate::Filters::default()
+                .languages(&[crate::Language::Spanish])
+                .build(),
+        ));
+
+        println!("Subs {:#?}", result.unwrap());
     }
 }

@@ -7,6 +7,7 @@ pub struct Subtitle {
     pub cd: String,
     pub uploaded: String,
     pub downloads: u32,
+    pub rating: f32,
     pub uploader: Option<String>,
     pub download_link: String,
 }
@@ -21,6 +22,7 @@ impl Subtitle {
         cd: String,
         uploaded: String,
         downloads: u32,
+        rating: f32,
         uploader: Option<String>,
     ) -> Self {
         Self {
@@ -31,6 +33,7 @@ impl Subtitle {
             cd,
             uploaded,
             downloads,
+            rating,
             uploader,
             download_link: format!("https://dl.opensubtitles.org/en/download/sub/{}", id),
         }
@@ -45,23 +48,15 @@ pub struct Movie {
 }
 
 impl Movie {
-    pub fn new(id: u64, name: String) -> Self {
+    pub fn new(id: u64, name: String, languages: &str) -> Self {
         // TODO sublanguageid by parameter
         Self {
             id,
             name,
             subtitles_link: format!(
-                "https://www.opensubtitles.org/en/search/sublanguageid-spa,eng,spl/idmovie-{}",
-                id
+                "https://www.opensubtitles.org/en/search/sublanguageid-{}/idmovie-{}",
+                languages, id
             ),
         }
     }
-
-    #[cfg(feature = "async")]
-    pub async fn get_subtitles(&self) -> crate::Result<()> {
-        Ok(())
-    }
-
-    #[cfg(feature = "blocking")]
-    pub fn get_subtitles2(&self) {}
 }

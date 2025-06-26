@@ -1,6 +1,7 @@
 mod client;
 mod core;
-mod filters;
+
+pub use client::{Filter, Filters, Language, SearchBy};
 
 #[cfg(feature = "async")]
 pub use client::default;

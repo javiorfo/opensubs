@@ -41,7 +41,11 @@ pub enum Response {
 }
 
 impl Response {
-    pub(crate) fn create(url: &str, html: &str) -> crate::Result<Self> {
+    pub(crate) fn create(
+        url: &str,
+        html: &str,
+        filter: Option<&crate::Filter>,
+    ) -> crate::Result<Self> {
         let document = Html::parse_document(html);
 
         let table_selector = Selector::parse("table#search_results")?;
@@ -132,7 +136,14 @@ impl Response {
                         .and_then(|s| s.parse::<u32>().ok())
                         .unwrap_or_default();
 
-                    let uploader = data.nth(3).and_then(|column| {
+                    let rating: f32 = data
+                        .next()
+                        .and_then(|column| column.select(&Selector::parse("span").unwrap()).next())
+                        .and_then(|column| column.text().next())
+                        .and_then(|text| text.parse::<f32>().ok())
+                        .unwrap_or_default();
+
+                    let uploader = data.nth(2).and_then(|column| {
                         let name = column
                             .text()
                             .collect::<Vec<_>>()
@@ -143,7 +154,7 @@ impl Response {
                     });
 
                     subtitles.push(model::Subtitle::new(
-                        id, movie, name, language, cd, uploaded, downloads, uploader,
+                        id, movie, name, language, cd, uploaded, downloads, rating, uploader,
                     ));
                 }
             }
@@ -151,6 +162,11 @@ impl Response {
         } else {
             let mut movies = Vec::new();
             if let Some(table) = document.select(&table_selector).next() {
+                let languages = match filter {
+                    Some(filter) => filter.languages_to_str(),
+                    _ => "all".to_string(),
+                };
+
                 // skip 1 (table header)
                 for line in table.select(&line_selector).skip(1) {
                     let id: u64 = match line.attr("id") {
@@ -169,7 +185,7 @@ impl Response {
                         .map(|value| value.replace("\n", "").replace("\t", "").to_string())
                         .unwrap_or_default();
 
-                    movies.push(model::Movie::new(id, name));
+                    movies.push(model::Movie::new(id, name, &languages));
                 }
             }
             Ok(Response::Movie(movies))

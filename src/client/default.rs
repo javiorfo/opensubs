@@ -1,11 +1,10 @@
 use reqwest::{Client, redirect::Policy};
 
-use crate::core::Response;
+use crate::{client::SearchBy, core::Response};
 
-pub async fn fetch_url() -> crate::Result<Response> {
-    let mut url = "https://www.opensubtitles.org/en/search2?MovieName=the+godfather&id=8&action=search&SubLanguageID=spa,spl,eng".to_string();
-    //     let mut url = "https://www.opensubtitles.org/en/search2?MovieName=the+holdovers+2023&id=8&action=search&SubLanguageID=spa&SubLanguageID=spl&SubLanguageID=spa,spl".to_string();
-    //     https://www.opensubtitles.org/en/search2?MovieName=the godfather 1972&id=8&action=search&SubLanguageID=spa&SubLanguageID=spl&SubLanguageID=spa,spl&Season=&Episode=&SubSumCD=&Genre=&MovieByteSize=&MovieLanguage=&MovieImdbRatingSign=1&MovieImdbRating=&MovieCountry=&MovieYearSign=1&MovieYear=&MovieFPS=&SubFormat=&SubAddDate=&Uploader=&IDUser=&Translator=&IMDBID=&MovieHash=&IDMovie=
+pub async fn search(search_by: SearchBy<'_>) -> crate::Result<Response> {
+    let search_by = &search_by;
+    let mut url: String = search_by.into();
 
     let client = Client::builder().redirect(Policy::none()).build()?;
 
@@ -22,19 +21,37 @@ pub async fn fetch_url() -> crate::Result<Response> {
                 println!("Redirecting to: {}", url);
             }
         } else {
-            return Ok(Response::create(&url, &response.text().await?).unwrap());
+            let filter = match search_by {
+                SearchBy::MovieAndFilter(_, filter) => Some(filter),
+                _ => None,
+            };
+
+            return Response::create(&url, &response.text().await?, filter);
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::fetch_url;
+    use super::search;
+    use crate::{client::SearchBy, core::Response};
 
     #[tokio::test]
     async fn test_fetch_url_async() {
-        let result = fetch_url().await;
-        assert!(result.is_ok());
-        println!("{:#?}", result.unwrap());
+        let result = search(SearchBy::MovieAndFilter(
+            "the godfather",
+            crate::Filters::default()
+                .year(1972)
+                .languages(&[crate::Language::Spanish])
+                .build(),
+        ))
+        .await;
+
+        println!("Movies {:#?}", result.as_ref().unwrap());
+
+        if let Ok(Response::Movie(movies)) = &result {
+            let sub = search(SearchBy::Url(&movies[0].subtitles_link)).await;
+            println!("Subs {:#?}", sub.unwrap());
+        }
     }
 }
