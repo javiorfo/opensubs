@@ -2,6 +2,7 @@ mod client;
 mod core;
 
 pub use client::{Filter, Filters, Language, SearchBy};
+pub use core::{Page, Response};
 
 #[cfg(feature = "async")]
 pub use client::default;

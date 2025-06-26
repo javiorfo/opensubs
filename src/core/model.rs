@@ -48,14 +48,14 @@ pub struct Movie {
 }
 
 impl Movie {
-    pub fn new(id: u64, name: String, languages: &str) -> Self {
+    pub fn new(id: u64, name: String, languages: &str, offset: &str) -> Self {
         // TODO sublanguageid by parameter
         Self {
             id,
             name,
             subtitles_link: format!(
-                "https://www.opensubtitles.org/en/search/sublanguageid-{}/idmovie-{}",
-                languages, id
+                "https://www.opensubtitles.org/en/search/sublanguageid-{}/idmovie-{}{}",
+                languages, id, offset
             ),
         }
     }

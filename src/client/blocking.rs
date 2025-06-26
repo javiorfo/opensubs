@@ -9,16 +9,11 @@ pub fn search(search_by: SearchBy<'_>) -> crate::Result<Response> {
     let client = Client::builder().redirect(Policy::none()).build()?;
 
     loop {
-        println!("Requesting URL: {}", url);
-
         let response = client.get(&url).send()?;
-
-        println!("Status: {}", response.status());
 
         if response.status().is_redirection() {
             if let Some(location) = response.headers().get(reqwest::header::LOCATION) {
                 url = location.to_str()?.to_string();
-                println!("Redirecting to: {}", url);
             }
         } else {
             let filter = match search_by {
@@ -45,6 +40,6 @@ mod tests {
                 .build(),
         ));
 
-        println!("Subs {:#?}", result.unwrap());
+        //         println!("Subs {:#?}", result.unwrap());
     }
 }

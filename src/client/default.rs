@@ -6,9 +6,22 @@ pub async fn search(search_by: SearchBy<'_>) -> crate::Result<Response> {
     let search_by = &search_by;
     let mut url: String = search_by.into();
 
+    let filter = match search_by {
+        SearchBy::MovieAndFilter(_, filter) => Some(filter),
+        _ => None,
+    };
+
+    let offset = filter
+        .and_then(|f| (f.page > 1).then_some(format!("/offset={}", (f.page - 1) * 40)))
+        .unwrap_or_default();
+
     let client = Client::builder().redirect(Policy::none()).build()?;
 
     loop {
+        if url.contains("imdbid") || url.contains("idmovie") {
+            url.push_str(&offset);
+        }
+
         println!("Requesting URL: {}", url);
 
         let response = client.get(&url).send().await?;
@@ -18,14 +31,10 @@ pub async fn search(search_by: SearchBy<'_>) -> crate::Result<Response> {
         if response.status().is_redirection() {
             if let Some(location) = response.headers().get(reqwest::header::LOCATION) {
                 url = location.to_str()?.to_string();
+
                 println!("Redirecting to: {}", url);
             }
         } else {
-            let filter = match search_by {
-                SearchBy::MovieAndFilter(_, filter) => Some(filter),
-                _ => None,
-            };
-
             return Response::create(&url, &response.text().await?, filter);
         }
     }
@@ -42,7 +51,8 @@ mod tests {
             "the godfather",
             crate::Filters::default()
                 .year(1972)
-                .languages(&[crate::Language::Spanish])
+                .languages(&[crate::Language::English])
+                .page(2)
                 .build(),
         ))
         .await;

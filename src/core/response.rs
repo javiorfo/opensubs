@@ -162,10 +162,13 @@ impl Response {
         } else {
             let mut movies = Vec::new();
             if let Some(table) = document.select(&table_selector).next() {
-                let languages = match filter {
-                    Some(filter) => filter.languages_to_str(),
-                    _ => "all".to_string(),
-                };
+                let languages = filter
+                    .map(|f| f.languages_to_str())
+                    .unwrap_or("all".to_string());
+
+                let offset = filter
+                    .and_then(|f| (f.page > 1).then_some(format!("/offset={}", (f.page - 1) * 40)))
+                    .unwrap_or_default();
 
                 // skip 1 (table header)
                 for line in table.select(&line_selector).skip(1) {
@@ -185,7 +188,7 @@ impl Response {
                         .map(|value| value.replace("\n", "").replace("\t", "").to_string())
                         .unwrap_or_default();
 
-                    movies.push(model::Movie::new(id, name, &languages));
+                    movies.push(model::Movie::new(id, name, &languages, &offset));
                 }
             }
             Ok(Response::Movie(movies))

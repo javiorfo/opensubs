@@ -66,7 +66,7 @@ impl<'a> Filters<'a> {
 pub struct Filter<'a> {
     year: u32,
     languages: &'a [Language],
-    page: u32,
+    pub(crate) page: u32,
     order_by: OrderBy,
 }
 
