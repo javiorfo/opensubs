@@ -5,8 +5,14 @@ pub enum SearchBy<'a> {
     MovieAndFilter(&'a str, Filter<'a>),
 }
 
+impl<'a> AsRef<SearchBy<'a>> for SearchBy<'a> {
+    fn as_ref(&self) -> &SearchBy<'a> {
+        self
+    }
+}
+
 impl From<&SearchBy<'_>> for String {
-    fn from(value: &SearchBy<'_>) -> Self {
+    fn from(value: &SearchBy) -> Self {
         match value {
             SearchBy::Url(url) => url.to_string(),
             SearchBy::Movie(movie) => format!(
@@ -18,6 +24,15 @@ impl From<&SearchBy<'_>> for String {
                 movie.trim(),
                 filter.create()
             ),
+        }
+    }
+}
+
+impl<'a> SearchBy<'a> {
+    pub fn filter(&self) -> Option<&Filter<'a>> {
+        match self {
+            SearchBy::MovieAndFilter(_, filter) => Some(filter),
+            _ => None,
         }
     }
 }
@@ -66,22 +81,18 @@ impl<'a> Filters<'a> {
 pub struct Filter<'a> {
     year: u32,
     languages: &'a [Language],
-    pub(crate) page: u32,
+    page: u32,
     order_by: OrderBy,
 }
 
 impl Filter<'_> {
     pub fn create(&self) -> String {
-        let year = if self.year == 0 {
-            "".to_string()
-        } else {
-            self.year.to_string()
-        };
-
         format!(
             "&SubLanguageID={}&MovieYearSign=1&MovieYear={}",
             self.languages_to_str(),
-            year
+            (self.year != 0)
+                .then(|| self.year.to_string())
+                .unwrap_or_default()
         )
     }
 
@@ -95,6 +106,14 @@ impl Filter<'_> {
             .collect::<Vec<_>>()
             .join(",")
     }
+
+    pub fn offset(&self) -> Option<String> {
+        (self.page > 1).then_some(format!("/offset={}", (self.page - 1) * 40))
+    }
+
+    pub fn sort(&self) -> Option<&str> {
+        self.order_by.sort()
+    }
 }
 
 #[derive(Debug)]
@@ -102,6 +121,16 @@ pub enum OrderBy {
     Uploaded,
     Downloads,
     Rating,
+}
+
+impl OrderBy {
+    pub fn sort(&self) -> Option<&str> {
+        match self {
+            Self::Uploaded => Some("/sort-5/asc-0"),
+            Self::Downloads => Some("/sort-7/asc-0"),
+            Self::Rating => Some("/sort-6/asc-0"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy)]

@@ -1,14 +1,18 @@
 use reqwest::{blocking::Client, redirect::Policy};
 
-use crate::{client::SearchBy, core::Response};
+use crate::{
+    client::SearchBy,
+    core::{Response, model::Subtitle},
+};
 
-pub fn search(search_by: SearchBy<'_>) -> crate::Result<Response> {
-    let search_by = &search_by;
-    let mut url: String = search_by.into();
-
+pub fn search(search_by: SearchBy) -> crate::Result<Response> {
+    let mut url: String = search_by.as_ref().into();
+    let filter = search_by.filter();
     let client = Client::builder().redirect(Policy::none()).build()?;
 
     loop {
+        Subtitle::process_url(&mut url, filter);
+
         let response = client.get(&url).send()?;
 
         if response.status().is_redirection() {
@@ -16,11 +20,6 @@ pub fn search(search_by: SearchBy<'_>) -> crate::Result<Response> {
                 url = location.to_str()?.to_string();
             }
         } else {
-            let filter = match search_by {
-                SearchBy::MovieAndFilter(_, filter) => Some(filter),
-                _ => None,
-            };
-
             return Response::create(&url, &response.text()?, filter);
         }
     }
@@ -36,10 +35,10 @@ mod tests {
         let result = search(SearchBy::MovieAndFilter(
             "holdovers",
             crate::Filters::default()
-                .languages(&[crate::Language::Spanish])
+                .languages(&[crate::Language::Spanish, crate::Language::SpanishLA])
                 .build(),
         ));
 
-        //         println!("Subs {:#?}", result.unwrap());
+        println!("Subs {:#?}", result.unwrap());
     }
 }

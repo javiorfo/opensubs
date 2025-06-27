@@ -1,3 +1,5 @@
+use crate::core::model::Subtitle;
+
 use super::model;
 use regex::Regex;
 use scraper::{Html, Selector};
@@ -52,7 +54,7 @@ impl Response {
         let line_selector = Selector::parse("tr")?;
         let column_selector = Selector::parse("td")?;
 
-        if url.contains("imdbid") || url.contains("idmovie") {
+        if Subtitle::is_subtitle(url) {
             let page = match document.select(&Selector::parse("div#msg")?).next() {
                 Some(page) => page
                     .select(&Selector::parse("span")?)
@@ -166,9 +168,8 @@ impl Response {
                     .map(|f| f.languages_to_str())
                     .unwrap_or("all".to_string());
 
-                let offset = filter
-                    .and_then(|f| (f.page > 1).then_some(format!("/offset={}", (f.page - 1) * 40)))
-                    .unwrap_or_default();
+                let offset = filter.and_then(|f| f.offset()).unwrap_or_default();
+                let sort = filter.and_then(|f| f.sort()).unwrap_or_default();
 
                 // skip 1 (table header)
                 for line in table.select(&line_selector).skip(1) {
@@ -188,7 +189,7 @@ impl Response {
                         .map(|value| value.replace("\n", "").replace("\t", "").to_string())
                         .unwrap_or_default();
 
-                    movies.push(model::Movie::new(id, name, &languages, &offset));
+                    movies.push(model::Movie::new(id, name, &languages, &offset, sort));
                 }
             }
             Ok(Response::Movie(movies))
