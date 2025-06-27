@@ -5,6 +5,7 @@ use crate::{
     core::{Response, model::Subtitle},
 };
 
+#[allow(dead_code)]
 pub fn search(search_by: SearchBy) -> crate::Result<Response> {
     let mut url: String = search_by.as_ref().into();
     let filter = search_by.filter();
@@ -28,7 +29,7 @@ pub fn search(search_by: SearchBy) -> crate::Result<Response> {
 #[cfg(test)]
 mod tests {
     use super::search;
-    use crate::SearchBy;
+    use crate::{Response, SearchBy};
 
     #[test]
     fn test_fetch_url() {
@@ -39,6 +40,7 @@ mod tests {
                 .build(),
         ));
 
-        println!("Subs {:#?}", result.unwrap());
+        assert!(result.is_ok());
+        assert!(matches!(result.unwrap(), Response::Subtitle(_, _)));
     }
 }

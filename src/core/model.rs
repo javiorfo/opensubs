@@ -16,7 +16,7 @@ pub struct Subtitle {
 
 #[allow(clippy::too_many_arguments)]
 impl Subtitle {
-    pub fn new(
+    pub(crate) fn new(
         id: u64,
         movie: String,
         name: Option<String>,
@@ -41,11 +41,11 @@ impl Subtitle {
         }
     }
 
-    pub fn is_subtitle(url: &str) -> bool {
+    pub(crate) fn is_subtitle(url: &str) -> bool {
         url.contains("imdbid") || url.contains("idmovie")
     }
 
-    pub fn process_url(url: &mut String, filter: Option<&Filter>) {
+    pub(crate) fn process_url(url: &mut String, filter: Option<&Filter>) {
         if Self::is_subtitle(url) {
             let offset = filter.and_then(|f| f.offset()).unwrap_or_default();
             let sort = filter.and_then(|f| f.sort()).unwrap_or_default();
@@ -64,8 +64,7 @@ pub struct Movie {
 }
 
 impl Movie {
-    pub fn new(id: u64, name: String, languages: &str, offset: &str, sort: &str) -> Self {
-        // TODO sublanguageid by parameter
+    pub(crate) fn new(id: u64, name: String, languages: &str, offset: &str, sort: &str) -> Self {
         Self {
             id,
             name,

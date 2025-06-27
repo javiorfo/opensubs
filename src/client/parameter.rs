@@ -29,7 +29,7 @@ impl From<&SearchBy<'_>> for String {
 }
 
 impl<'a> SearchBy<'a> {
-    pub fn filter(&self) -> Option<&Filter<'a>> {
+    pub(crate) fn filter(&self) -> Option<&Filter<'a>> {
         match self {
             SearchBy::MovieAndFilter(_, filter) => Some(filter),
             _ => None,
@@ -86,7 +86,7 @@ pub struct Filter<'a> {
 }
 
 impl Filter<'_> {
-    pub fn create(&self) -> String {
+    pub(crate) fn create(&self) -> String {
         format!(
             "&SubLanguageID={}&MovieYearSign=1&MovieYear={}",
             self.languages_to_str(),
@@ -96,7 +96,7 @@ impl Filter<'_> {
         )
     }
 
-    pub fn languages_to_str(&self) -> String {
+    pub(crate) fn languages_to_str(&self) -> String {
         self.languages
             .iter()
             .map(|&lang| {
@@ -107,11 +107,11 @@ impl Filter<'_> {
             .join(",")
     }
 
-    pub fn offset(&self) -> Option<String> {
+    pub(crate) fn offset(&self) -> Option<String> {
         (self.page > 1).then_some(format!("/offset={}", (self.page - 1) * 40))
     }
 
-    pub fn sort(&self) -> Option<&str> {
+    pub(crate) fn sort(&self) -> Option<&str> {
         self.order_by.sort()
     }
 }
@@ -124,7 +124,7 @@ pub enum OrderBy {
 }
 
 impl OrderBy {
-    pub fn sort(&self) -> Option<&str> {
+    pub(crate) fn sort(&self) -> Option<&str> {
         match self {
             Self::Uploaded => Some("/sort-5/asc-0"),
             Self::Downloads => Some("/sort-7/asc-0"),

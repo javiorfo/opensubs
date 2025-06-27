@@ -46,11 +46,13 @@ mod tests {
         ))
         .await;
 
-        println!("Movies {:#?}", result.as_ref().unwrap());
+        assert!(result.is_ok());
+        assert!(matches!(result.as_ref().unwrap(), Response::Movie(_)));
 
         if let Ok(Response::Movie(movies)) = &result {
             let sub = search(SearchBy::Url(&movies[0].subtitles_link)).await;
-            println!("Subs {:#?}", sub.unwrap());
+            assert!(sub.is_ok());
+            assert!(matches!(sub.as_ref().unwrap(), Response::Subtitle(_, _)));
         }
     }
 }
