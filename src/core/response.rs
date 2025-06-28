@@ -4,14 +4,24 @@ use super::model;
 use regex::Regex;
 use scraper::{Html, Selector};
 
+/// Represents pagination information for search results.
+///
+/// The `Page` struct holds the range (`from` to `to`) and the total number of items.
 #[derive(Debug, Default)]
 pub struct Page {
+    /// The starting index of the current page.
     pub from: u32,
+    /// The ending index of the current page.
     pub to: u32,
+    /// The total number of items available.
     pub total: u32,
 }
 
 impl From<Option<String>> for Page {
+    /// Parses a string (extracted from HTML) to create a `Page`.
+    ///
+    /// The string should contain at least three numbers: `from`, `to`, and `total`.
+    /// If parsing fails, returns the default page (all fields set to zero).
     fn from(value: Option<String>) -> Self {
         match value {
             Some(ref text) => {
@@ -36,13 +46,33 @@ impl From<Option<String>> for Page {
     }
 }
 
+/// Represents a parsed response from a search page.
+///
+/// The response can either be a list of movies or a list of subtitles with pagination.
 #[derive(Debug)]
 pub enum Response {
+    /// A list of movies found in the search results.
     Movie(Vec<model::Movie>),
+    /// A paginated list of subtitles found in the search results.
     Subtitle(Page, Vec<model::Subtitle>),
 }
 
 impl Response {
+    /// Parses an HTML search result page and constructs a `Response`.
+    ///
+    /// Depending on the URL, this function will parse either a list of movies or a list of subtitles.
+    ///
+    /// # Arguments
+    /// * `url` - The URL of the search page.
+    /// * `html` - The HTML content of the page.
+    /// * `filter` - Optional filter to apply for language, offset, and sort.
+    ///
+    /// # Returns
+    /// * `Response::Movie` if the page contains a list of movies.
+    /// * `Response::Subtitle` if the page contains a list of subtitles, along with pagination info.
+    ///
+    /// # Errors
+    /// Returns an error if HTML parsing or selector creation fails.
     pub(crate) fn create(
         url: &str,
         html: &str,

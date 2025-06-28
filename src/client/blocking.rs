@@ -5,6 +5,41 @@ use crate::{
     core::{Response, model::Subtitle},
 };
 
+/// Performs a synchronous search using the provided [`SearchBy`] criteria, handling HTTP redirections manually.
+///
+/// This function builds a search URL from the given `search_by` parameter, applies any necessary filters,
+/// and sends a synchronous HTTP GET request using a [`reqwest::blocking::Client`] with redirection disabled.
+/// If the response is a redirection, it follows the `Location` header manually in a loop until a non-redirection
+/// response is received. The final response is processed and returned as a [`Response`].
+///
+/// # Arguments
+///
+/// * `search_by` - Search criteria implementing [`SearchBy`].
+///
+/// # Returns
+///
+/// Returns a [`opensubs::Result<Response>`] containing the processed response on success, or an error if any step fails.
+///
+/// # Errors
+///
+/// This function will return an error if:
+/// - The HTTP client cannot be built.
+/// - The HTTP request fails.
+/// - The `Location` header in a redirection cannot be parsed as a valid string.
+/// - Response processing fails.
+///
+/// # Example
+///
+/// ```
+/// let result = opensubs::blocking::search(SearchBy::Movie("the godfather"))?;
+/// // handle result
+/// ```
+///
+/// # Notes
+///
+/// - Redirections are handled manually (not automatically by reqwest).
+/// - The function loops, following redirects, until a non-redirection response is received.
+/// - This is a blocking synchronous version (available by cargo feature "blocking")
 #[allow(dead_code)]
 pub fn search(search_by: SearchBy) -> crate::Result<Response> {
     let mut url: String = search_by.as_ref().into();

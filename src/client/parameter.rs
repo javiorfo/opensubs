@@ -1,7 +1,13 @@
+// Specifies the method and parameters for searching subtitles.
+///
+/// This enum allows you to search by a direct URL, by movie name, or by movie name with additional filters.
 #[derive(Debug)]
 pub enum SearchBy<'a> {
+    /// Search using a direct URL.
     Url(&'a str),
+    /// Search by movie name.
     Movie(&'a str),
+    /// Search by movie name with additional filters.
     MovieAndFilter(&'a str, Filter<'a>),
 }
 
@@ -12,6 +18,7 @@ impl<'a> AsRef<SearchBy<'a>> for SearchBy<'a> {
 }
 
 impl From<&SearchBy<'_>> for String {
+    /// Converts a `SearchBy` variant into a URL string for querying OpenSubtitles.
     fn from(value: &SearchBy) -> Self {
         match value {
             SearchBy::Url(url) => url.to_string(),
@@ -29,6 +36,7 @@ impl From<&SearchBy<'_>> for String {
 }
 
 impl<'a> SearchBy<'a> {
+    /// Returns a reference to the filter if present (`MovieAndFilter` variant), otherwise `None`.
     pub(crate) fn filter(&self) -> Option<&Filter<'a>> {
         match self {
             SearchBy::MovieAndFilter(_, filter) => Some(filter),
@@ -37,10 +45,22 @@ impl<'a> SearchBy<'a> {
     }
 }
 
+/// Builder for constructing a [`Filter`] with custom parameters.
+///
+/// # Example
+/// ```
+/// let filter = Filters::default()
+///     .year(2020)
+///     .languages(&[Language::English])
+///     .page(2)
+///     .order_by(OrderBy::Downloads)
+///     .build();
+/// ```
 #[derive(Debug)]
 pub struct Filters<'a>(Filter<'a>);
 
 impl Default for Filters<'_> {
+    /// Creates a `Filters` builder with default parameters.
     fn default() -> Self {
         Self(Filter {
             year: 0,
@@ -52,40 +72,53 @@ impl Default for Filters<'_> {
 }
 
 impl<'a> Filters<'a> {
+    /// Sets the year filter.
     pub fn year(mut self, year: u32) -> Self {
         self.0.year = year;
         self
     }
 
+    /// Sets the languages filter.
     pub fn languages(mut self, languages: &'a [Language]) -> Self {
         self.0.languages = languages;
         self
     }
 
+    /// Sets the pagination page.
     pub fn page(mut self, page: u32) -> Self {
         self.0.page = page;
         self
     }
 
+    /// Sets the sorting order.
     pub fn order_by(mut self, order_by: OrderBy) -> Self {
         self.0.order_by = order_by;
         self
     }
 
+    /// Builds and returns the configured [`Filter`].
     pub fn build(self) -> Filter<'a> {
         self.0
     }
 }
 
+/// Represents search filters for querying subtitles.
+///
+/// This struct is usually created via the [`Filters`] builder.
 #[derive(Debug)]
 pub struct Filter<'a> {
+    /// Year to filter by (0 means no filter).
     year: u32,
+    /// Languages to filter by.
     languages: &'a [Language],
+    /// Page number for pagination (1-based).
     page: u32,
+    /// Sorting order.
     order_by: OrderBy,
 }
 
 impl Filter<'_> {
+    /// Creates a query string for the filter parameters.
     pub(crate) fn create(&self) -> String {
         let year = if self.year != 0 {
             self.year.to_string()
@@ -100,6 +133,7 @@ impl Filter<'_> {
         )
     }
 
+    /// Returns a comma-separated string of language codes.
     pub(crate) fn languages_to_str(&self) -> String {
         self.languages
             .iter()
@@ -111,23 +145,30 @@ impl Filter<'_> {
             .join(",")
     }
 
+    /// Returns the offset string for pagination if the page is greater than 1.
     pub(crate) fn offset(&self) -> Option<String> {
         (self.page > 1).then_some(format!("/offset={}", (self.page - 1) * 40))
     }
 
+    /// Returns the sort string for the current `OrderBy` option.
     pub(crate) fn sort(&self) -> Option<&str> {
         self.order_by.sort()
     }
 }
 
+// Specifies the sorting order for search results.
 #[derive(Debug)]
 pub enum OrderBy {
+    /// Sort by upload date (default).
     Uploaded,
+    /// Sort by number of downloads.
     Downloads,
+    /// Sort by rating.
     Rating,
 }
 
 impl OrderBy {
+    /// Returns the corresponding sort string for the order.
     pub(crate) fn sort(&self) -> Option<&str> {
         match self {
             Self::Uploaded => Some("/sort-5/asc-0"),
@@ -137,6 +178,19 @@ impl OrderBy {
     }
 }
 
+/// Represents all supported subtitle languages.
+///
+/// Each variant corresponds to a language supported by OpenSubtitles.
+/// Use this enum to specify subtitle languages in search filters and queries.
+///
+/// # Example
+/// ```
+/// use opensubs::Language;
+///
+/// let lang = Language::English;
+/// let code: &str = lang.into();
+/// assert_eq!(code, "eng");
+/// ```
 #[derive(Debug, Clone, Copy)]
 pub enum Language {
     Abkhazian,
@@ -248,6 +302,15 @@ pub enum Language {
     Welsch,
 }
 
+/// Converts a [`Language`] variant into its OpenSubtitles language code as a `&str`.
+///
+/// # Example
+/// ```
+/// use opensubs::Language;
+///
+/// let code: &str = Language::PortugueseBr.into();
+/// assert_eq!(code, "pob");
+/// ```
 impl From<Language> for &str {
     fn from(value: Language) -> Self {
         match value {
