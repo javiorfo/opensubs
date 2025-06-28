@@ -24,3 +24,12 @@ regex = "1.11.1"
 default = ["async"]
 async = ["reqwest", "tokio"]
 blocking = ["reqwest"]
+
+[[example]]
+name = "simple"
+
+[[example]]
+name = "blocking"
+
+[[example]]
+name = "download_sub"

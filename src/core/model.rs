@@ -37,7 +37,7 @@ impl Subtitle {
             downloads,
             rating,
             uploader,
-            download_link: format!("https://dl.opensubtitles.org/en/download/sub/{}", id),
+            download_link: format!("https://dl.opensubtitles.org/en/download/sub/{id}"),
         }
     }
 
@@ -69,8 +69,7 @@ impl Movie {
             id,
             name,
             subtitles_link: format!(
-                "https://www.opensubtitles.org/en/search/sublanguageid-{}/idmovie-{}{}{}",
-                languages, id, offset, sort
+                "https://www.opensubtitles.org/en/search/sublanguageid-{languages}/idmovie-{id}{offset}{sort}"
             ),
         }
     }

@@ -87,12 +87,16 @@ pub struct Filter<'a> {
 
 impl Filter<'_> {
     pub(crate) fn create(&self) -> String {
+        let year = if self.year != 0 {
+            self.year.to_string()
+        } else {
+            Default::default()
+        };
+
         format!(
             "&SubLanguageID={}&MovieYearSign=1&MovieYear={}",
             self.languages_to_str(),
-            (self.year != 0)
-                .then(|| self.year.to_string())
-                .unwrap_or_default()
+            year
         )
     }
 

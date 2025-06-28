@@ -32,9 +32,22 @@ mod tests {
     use crate::{Response, SearchBy};
 
     #[test]
-    fn test_fetch_url() {
+    fn test_search_by_movie_and_filter() {
         let result = search(SearchBy::MovieAndFilter(
             "holdovers",
+            crate::Filters::default()
+                .languages(&[crate::Language::Spanish, crate::Language::SpanishLA])
+                .build(),
+        ));
+
+        assert!(result.is_ok());
+        assert!(matches!(result.unwrap(), Response::Subtitle(_, _)));
+    }
+
+    #[test]
+    fn test_search_by_movie() {
+        let result = search(SearchBy::MovieAndFilter(
+            "pulp fiction",
             crate::Filters::default()
                 .languages(&[crate::Language::Spanish, crate::Language::SpanishLA])
                 .build(),
