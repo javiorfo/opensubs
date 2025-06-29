@@ -1,6 +1,7 @@
 # opensubs
-Library to search subtitles from opensubtitles.org 
+*Library to search subtitles from opensubtitles.org*
 
+## Description
 This crate provides a high-level, ergonomic API for searching and retrieving subtitles and related metadata
 from `opensubtitles.org`. It offers both asynchronous and blocking (synchronous) interfaces, with flexible
 filtering and ordering options.
