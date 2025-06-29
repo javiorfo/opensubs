@@ -7,7 +7,7 @@ authors = ["Javier Orfo <javierorfo@protonmail.com>"]
 license = "MIT"
 repository = "https://github.com/javiorfo/opensubs"
 homepage = "https://github.com/javiorfo/opensubs#readme"
-keywords = ["subtitles", "opensubtitles", "opensubtitles.org", "subtitle-finder"]
+keywords = ["subtitles", "opensubtitles", "subtitle-finder"]
 
 [lib]
 name = "opensubs"
