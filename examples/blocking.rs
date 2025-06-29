@@ -1,7 +1,8 @@
 use opensubs::{Filters, Language, OrderBy, Response, SearchBy};
 
 fn main() -> opensubs::Result {
-    // blocking search movie "holdovers", year 1972, french and german subs, order by rating
+    // blocking search movie "the godfather"
+    // year 1972, french and german subs, order by rating
     let results = opensubs::blocking::search(SearchBy::MovieAndFilter(
         "the godfather",
         Filters::default()
@@ -13,7 +14,8 @@ fn main() -> opensubs::Result {
 
     match results {
         Response::Movie(movies) => {
-            // If results is movies get the first and find subtitles for it
+            // If results is Movie type, get the subtitles_link property
+            // and find subtitles for it
             if let Some(movie) = movies.first() {
                 let subs = opensubs::blocking::search(SearchBy::Url(&movie.subtitles_link))?;
                 println!("Subtitles {subs:#?}");

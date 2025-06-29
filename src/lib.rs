@@ -1,7 +1,7 @@
-//! # Subtitle Search Crate
+//! # A library to search subtitles from opensubtitles.org
 //!
 //! This crate provides a high-level, ergonomic API for searching and retrieving subtitles and related metadata
-//! from supported sources. It offers both asynchronous and blocking (synchronous) interfaces, with flexible
+//! from opensubtitles.org. It offers both asynchronous and blocking (synchronous) interfaces, with flexible
 //! filtering and ordering options.
 //!
 //! ## Features
@@ -20,33 +20,68 @@
 //! opensubs = "0.1.0"
 //! ```
 //!
-//! ### Async Example
+//! #### Enable blocking feature if needed
+//!
+//! ```
+//! [dependencies]
+//! opensubs = { version = "0.1.0", features = ["blocking"] }
+//! ```
+//!
+//! ### Async Example (default)
 //!
 //! ```
 //! # #[cfg(feature = "async")]
-//! use opensubs::{SearchBy, search};
+//! use opensubs::{Filters, Language, OrderBy, SearchBy};
 //!
-//! # #[cfg(feature = "async")]
 //! #[tokio::main]
-//! async fn main() -> opensubs::Result<()> {
-//!     let search_by = SearchBy::new("movie name");
-//!     let response = search(search_by).await?;
-//!     println!("{:?}", response);
+//! async fn main() -> opensubs::Result {
+//!     // async search movie "holdovers", spanish subs, order by rating
+//!     let results = opensubs::search(SearchBy::MovieAndFilter(
+//!         "holdovers",
+//!         Filters::default()
+//!             .languages(&[Language::Spanish])
+//!             .order_by(OrderBy::Rating)
+//!             .build(),
+//!     ))
+//!     .await?;
+//!
+//!     println!("Subtitles {results:#?}");
+//!
 //!     Ok(())
 //! }
 //! ```
 //!
-//! ### Blocking Example
+//! ### Blocking Example (feature "blocking")
 //!
 //! ```
 //! # #[cfg(feature = "blocking")]
-//! use opensubs::{SearchBy, blocking};
+//! use opensubs::{Filters, Language, OrderBy, Response, SearchBy};
 //!
-//! # #[cfg(feature = "blocking")]
-//! fn main() -> opensubs::Result<()> {
-//!     let search_by = SearchBy::new("movie name");
-//!     let response = blocking::search(search_by)?;
-//!     println!("{:?}", response);
+//! fn main() -> opensubs::Result {
+//!     // blocking search movie "the godfather"
+//!     // year 1972, french and german subs, order by rating
+//!     let results = opensubs::blocking::search(SearchBy::MovieAndFilter(
+//!         "the godfather",
+//!         Filters::default()
+//!             .year(1972)
+//!             .languages(&[Language::French, Language::German])
+//!             .order_by(OrderBy::Downloads)
+//!             .build(),
+//!     ))?;
+//!
+//!     match results {
+//!         Response::Movie(movies) => {
+//!             // If results is Movie type, get the subtitles_link property
+//!             // and find subtitles for it
+//!             if let Some(movie) = movies.first() {
+//!                 let subs = opensubs::blocking::search(SearchBy::Url(&movie.subtitles_link))?;
+//!                 println!("Subtitles {subs:#?}");
+//!             }
+//!         }
+//!         // else print the subtitles
+//!         _ => println!("Subtitles {results:#?}"),
+//!     }
+//!
 //!     Ok(())
 //! }
 //! ```
