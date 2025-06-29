@@ -16,7 +16,7 @@ opensubs = "0.1.0"
 
 #### Enable blocking feature if needed
 
-```
+```toml
 [dependencies]
 opensubs = { version = "0.1.0", features = ["blocking"] }
 ```
