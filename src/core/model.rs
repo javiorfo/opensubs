@@ -1,4 +1,4 @@
-use crate::Filter;
+use crate::client::Filter;
 
 /// Represents a subtitle entry with metadata and download information.
 #[derive(Debug, Default)]

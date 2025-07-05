@@ -1,4 +1,4 @@
-use crate::core::model::Subtitle;
+use crate::{client::Filter, core::model::Subtitle};
 
 use super::model;
 use regex::Regex;
@@ -73,11 +73,7 @@ impl Response {
     ///
     /// # Errors
     /// Returns an error if HTML parsing or selector creation fails.
-    pub(crate) fn create(
-        url: &str,
-        html: &str,
-        filter: Option<&crate::Filter>,
-    ) -> crate::Result<Self> {
+    pub(crate) fn create(url: &str, html: &str, filter: Option<&Filter>) -> crate::Result<Self> {
         let document = Html::parse_document(html);
 
         let table_selector = Selector::parse("table#search_results")?;

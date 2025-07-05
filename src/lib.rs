@@ -91,7 +91,7 @@
 //! - [`client`] — Search options, filters, and search implementations.
 //! - [`core`] — Core types, response parsing, and subtitle/movie models.
 //! - [`Page`], [`Response`], [`Movie`], [`Subtitle`] — Main data structures for results.
-//! - [`Filter`], [`Filters`], [`Language`], [`OrderBy`], [`SearchBy`] — Search configuration types.
+//! - [`Filters`], [`Language`], [`OrderBy`], [`SearchBy`] — Search configuration types.
 //!
 //! ## Error Handling
 //!
@@ -115,7 +115,7 @@
 mod client;
 mod core;
 
-pub use client::{Filter, Filters, Language, OrderBy, SearchBy};
+pub use client::{Filters, Language, OrderBy, SearchBy};
 pub use core::{
     Page, Response,
     model::{Movie, Subtitle},
