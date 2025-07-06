@@ -17,14 +17,14 @@
 //!
 //! ```
 //! [dependencies]
-//! opensubs = "0.1.0"
+//! opensubs = "0.1.1"
 //! ```
 //!
 //! #### Enable blocking feature if needed
 //!
 //! ```
 //! [dependencies]
-//! opensubs = { version = "0.1.0", features = ["blocking"] }
+//! opensubs = { version = "0.1.1", features = ["blocking"] }
 //! ```
 //!
 //! ### Async Example (default)
@@ -105,7 +105,7 @@
 //!
 //! ## License
 //!
-//! Licensed under your preferred license.
+//! This is free software, published under the [MIT License](https://mit-license.org/).
 //!
 //! ## See Also
 //!
@@ -142,5 +142,7 @@ pub enum Error {
     SelectorError(#[from] scraper::error::SelectorErrorKind<'static>),
 }
 
-/// Convenient result type for this crate.
+/// A convenient alias for `Result` with the crate's [`Error`] type.
+///
+/// Defaults to `()` for the success type if not specified.
 pub type Result<T = ()> = std::result::Result<T, Error>;

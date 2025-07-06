@@ -11,14 +11,14 @@ Add this crate to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-opensubs = "0.1.0"
+opensubs = "0.1.1"
 ```
 
 #### Enable blocking feature if needed
 
 ```toml
 [dependencies]
-opensubs = { version = "0.1.0", features = ["blocking"] }
+opensubs = { version = "0.1.1", features = ["blocking"] }
 ```
 
 ## Async Example (default)
@@ -86,6 +86,9 @@ fn main() -> opensubs::Result {
 - Default async search. Blocking search available too
 - Search by url, movie name and/or filters (languages, page, ordering and year)
 - Obtain not only info and metadata but also a subtitle download link. [Here](https://github.com/javiorfo/opensubs/blob/master/examples/download_sub.rs) is an example of download using `wget`
+
+## Docs
+Find all the configuration options in the full [documentation](https://docs.rs/opensubs/0.1.1/opensubs/).
 
 ---
 
