@@ -11,14 +11,14 @@ Add this crate to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-opensubs = "0.1.1"
+opensubs = "0.1.2"
 ```
 
 #### Enable blocking feature if needed
 
 ```toml
 [dependencies]
-opensubs = { version = "0.1.1", features = ["blocking"] }
+opensubs = { version = "0.1.2", features = ["blocking"] }
 ```
 
 ## Async Example (default)
@@ -88,7 +88,7 @@ fn main() -> opensubs::Result {
 - Obtain not only info and metadata but also a subtitle download link. [Here](https://github.com/javiorfo/opensubs/blob/master/examples/download_sub.rs) is an example of download using `wget`
 
 ## Docs
-Find all the configuration options in the full [documentation](https://docs.rs/opensubs/0.1.1/opensubs/).
+Find all the configuration options in the full [documentation](https://docs.rs/opensubs/0.1.2/opensubs/).
 
 ---
 

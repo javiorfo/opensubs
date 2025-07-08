@@ -1,6 +1,6 @@
 [package]
 name = "opensubs"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 description = "Library to search subtitles from opensubtitles.org"
 authors = ["Javier Orfo <javierorfo@protonmail.com>"]
@@ -30,6 +30,7 @@ name = "simple"
 
 [[example]]
 name = "blocking"
+required-features = ["blocking"]
 
 [[example]]
 name = "download_sub"

@@ -49,6 +49,8 @@ impl<'a> SearchBy<'a> {
 ///
 /// # Example
 /// ```
+/// use opensubs::{Filters, Language, OrderBy};
+///
 /// let filter = Filters::default()
 ///     .year(2020)
 ///     .languages(&[Language::English])

@@ -11,21 +11,6 @@
 //! - Both async and blocking APIs (enable via crate features).
 //! - Strong error handling with [`Error`] and [`Result`] types.
 //!
-//! ## Usage
-//!
-//! Add this crate to your `Cargo.toml`:
-//!
-//! ```
-//! [dependencies]
-//! opensubs = "0.1.1"
-//! ```
-//!
-//! #### Enable blocking feature if needed
-//!
-//! ```
-//! [dependencies]
-//! opensubs = { version = "0.1.1", features = ["blocking"] }
-//! ```
 //!
 //! ### Async Example (default)
 //!
@@ -55,6 +40,7 @@
 //!
 //! ```
 //! # #[cfg(feature = "blocking")]
+//! # {
 //! use opensubs::{Filters, Language, OrderBy, Response, SearchBy};
 //!
 //! fn main() -> opensubs::Result {
@@ -84,6 +70,7 @@
 //!
 //!     Ok(())
 //! }
+//! # }
 //! ```
 //!
 //! ## Modules & Re-exports

@@ -32,7 +32,11 @@ use crate::{
 /// # Example
 ///
 /// ```
-/// let result = opensubs::search(SearchBy::Movie("the godfather"))?;
+/// use opensubs::{search, SearchBy};
+///
+/// async fn some() {
+///     let result = search(SearchBy::Movie("the godfather")).await.expect("error");
+/// }
 /// // handle result
 /// ```
 ///

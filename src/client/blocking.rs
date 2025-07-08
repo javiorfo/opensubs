@@ -31,8 +31,13 @@ use crate::{
 /// # Example
 ///
 /// ```
-/// let result = opensubs::blocking::search(SearchBy::Movie("the godfather"))?;
+/// # #[cfg(feature = "blocking")]
+/// # {
+/// use opensubs::{blocking, SearchBy};
+///
+/// let result = blocking::search(SearchBy::Movie("the godfather")).expect("error");
 /// // handle result
+/// # }
 /// ```
 ///
 /// # Notes
