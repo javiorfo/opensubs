@@ -139,8 +139,8 @@ impl Filter<'_> {
     pub(crate) fn languages_to_str(&self) -> String {
         self.languages
             .iter()
-            .map(|&lang| {
-                let lang_str: &str = lang.into();
+            .map(|lang| {
+                let lang_str: &str = lang.clone().into();
                 lang_str
             })
             .collect::<Vec<_>>()
@@ -159,7 +159,7 @@ impl Filter<'_> {
 }
 
 // Specifies the sorting order for search results.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum OrderBy {
     /// Sort by upload date (default).
     Uploaded,
@@ -193,7 +193,7 @@ impl OrderBy {
 /// let code: &str = lang.into();
 /// assert_eq!(code, "eng");
 /// ```
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum Language {
     Abkhazian,
     Afrikaans,
@@ -424,5 +424,135 @@ impl From<Language> for &str {
             Language::Vietnamese => "vie",
             Language::Welsch => "wel",
         }
+    }
+}
+
+impl TryFrom<&str> for Language {
+    type Error = String;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value.to_lowercase().as_str() {
+            "abkhazian" => Ok(Language::Abkhazian),
+            "afrikaans" => Ok(Language::Afrikaans),
+            "albanian" => Ok(Language::Albanian),
+            "amharic" => Ok(Language::Amharic),
+            "arabic" => Ok(Language::Arabic),
+            "aragonese" => Ok(Language::Aragonese),
+            "armenian" => Ok(Language::Armenian),
+            "assamese" => Ok(Language::Assamese),
+            "asturian" => Ok(Language::Asturian),
+            "azerbaijani" => Ok(Language::Azerbaijani),
+            "basque" => Ok(Language::Basque),
+            "belarusian" => Ok(Language::Belarusian),
+            "bengali" => Ok(Language::Bengali),
+            "bosnian" => Ok(Language::Bosnian),
+            "breton" => Ok(Language::Breton),
+            "bulgarian" => Ok(Language::Bulgarian),
+            "burmese" => Ok(Language::Burmese),
+            "catalan" => Ok(Language::Catalan),
+            "chinese cantonese" => Ok(Language::ChineseCantonese),
+            "chinese simplified" => Ok(Language::ChineseSimplified),
+            "chinese traditional" => Ok(Language::ChineseTraditional),
+            "chinese bilingual" => Ok(Language::ChineseBilingual),
+            "croatian" => Ok(Language::Croatian),
+            "czech" => Ok(Language::Czech),
+            "danish" => Ok(Language::Danish),
+            "dari" => Ok(Language::Dari),
+            "dutch" => Ok(Language::Dutch),
+            "english" => Ok(Language::English),
+            "esperanto" => Ok(Language::Esperanto),
+            "estonian" => Ok(Language::Estonian),
+            "extremaduran" => Ok(Language::Extremaduran),
+            "finnish" => Ok(Language::Finnish),
+            "french" => Ok(Language::French),
+            "gaelic" => Ok(Language::Gaelic),
+            "galician" => Ok(Language::Galician),
+            "georgian" => Ok(Language::Georgian),
+            "german" => Ok(Language::German),
+            "greek" => Ok(Language::Greek),
+            "hebrew" => Ok(Language::Hebrew),
+            "hindi" => Ok(Language::Hindi),
+            "hungarian" => Ok(Language::Hungarian),
+            "icelandic" => Ok(Language::Icelandic),
+            "igbo" => Ok(Language::Igbo),
+            "indonesian" => Ok(Language::Indonesian),
+            "interlingua" => Ok(Language::Interlingua),
+            "irish" => Ok(Language::Irish),
+            "italian" => Ok(Language::Italian),
+            "japanese" => Ok(Language::Japanese),
+            "kannada" => Ok(Language::Kannada),
+            "kazakh" => Ok(Language::Kazakh),
+            "khmer" => Ok(Language::Khmer),
+            "korean" => Ok(Language::Korean),
+            "kurdish" => Ok(Language::Kurdish),
+            "kyrgyz" => Ok(Language::Kyrgyz),
+            "latvian" => Ok(Language::Latvian),
+            "lithuanian" => Ok(Language::Lithuanian),
+            "luxembourgish" => Ok(Language::Luxembourgish),
+            "macedonian" => Ok(Language::Macedonian),
+            "malay" => Ok(Language::Malay),
+            "malayalam" => Ok(Language::Malayalam),
+            "manipuri" => Ok(Language::Manipuri),
+            "marathi" => Ok(Language::Marathi),
+            "mongolian" => Ok(Language::Mongolian),
+            "montenegrin" => Ok(Language::Montenegrin),
+            "navajo" => Ok(Language::Navajo),
+            "nepali" => Ok(Language::Nepali),
+            "northern sami" => Ok(Language::NorthernSami),
+            "norwegian" => Ok(Language::Norwegian),
+            "occitan" => Ok(Language::Occitan),
+            "odia" => Ok(Language::Odia),
+            "persian" => Ok(Language::Persian),
+            "polish" => Ok(Language::Polish),
+            "portuguese" => Ok(Language::Portuguese),
+            "portuguese br" => Ok(Language::PortugueseBr),
+            "portuguese mz" => Ok(Language::PortugueseMz),
+            "pushto" => Ok(Language::Pushto),
+            "romanian" => Ok(Language::Romanian),
+            "russian" => Ok(Language::Russian),
+            "santali" => Ok(Language::Santali),
+            "serbian" => Ok(Language::Serbian),
+            "sindhi" => Ok(Language::Sindhi),
+            "sinhalese" => Ok(Language::Sinhalese),
+            "slovak" => Ok(Language::Slovak),
+            "slovenian" => Ok(Language::Slovenian),
+            "somali" => Ok(Language::Somali),
+            "sorbian languages" => Ok(Language::SorbianLanguages),
+            "south azerbaijani" => Ok(Language::SouthAzerbaijani),
+            "spanish" => Ok(Language::Spanish),
+            "spanish eu" => Ok(Language::SpanishEU),
+            "spanish la" => Ok(Language::SpanishLA),
+            "swahili" => Ok(Language::Swahili),
+            "swedish" => Ok(Language::Swedish),
+            "syriac" => Ok(Language::Syriac),
+            "tagalog" => Ok(Language::Tagalog),
+            "tamil" => Ok(Language::Tamil),
+            "tatar" => Ok(Language::Tatar),
+            "telugu" => Ok(Language::Telugu),
+            "tetum" => Ok(Language::Tetum),
+            "thai" => Ok(Language::Thai),
+            "toki pona" => Ok(Language::TokiPona),
+            "turkish" => Ok(Language::Turkish),
+            "turkmen" => Ok(Language::Turkmen),
+            "ukrainian" => Ok(Language::Ukrainian),
+            "urdu" => Ok(Language::Urdu),
+            "uzbek" => Ok(Language::Uzbek),
+            "vietnamese" => Ok(Language::Vietnamese),
+            "welsch" => Ok(Language::Welsch),
+            _ => Err(format!("Invalid value for Language: {value}")),
+        }
+    }
+}
+
+/// Implements the `Display` trait for the `Language` enum.
+///
+/// This implementation allows `Language` variants to be easily formatted into
+/// user-facing strings using the `{}` format specifier. It uses the `Debug`
+/// implementation to get a simple string representation of the enum variant
+/// name (e.g., `English`, `Spanish`).
+impl std::fmt::Display for Language {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        // Use a match statement to convert each enum variant to a string
+        write!(f, "{:?}", self)
     }
 }

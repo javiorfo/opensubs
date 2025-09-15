@@ -1,4 +1,4 @@
-use reqwest::{Client, redirect::Policy};
+use reqwest::{Client, header::USER_AGENT, redirect::Policy};
 
 use crate::{
     client::SearchBy,
@@ -52,7 +52,11 @@ pub async fn search(search_by: SearchBy<'_>) -> crate::Result<Response> {
     loop {
         Subtitle::process_url(&mut url, filter);
 
-        let response = client.get(&url).send().await?;
+        let response = client
+            .get(&url)
+            .header(USER_AGENT, "Mozilla/5.0 (Linux x86_64)")
+            .send()
+            .await?;
 
         if response.status().is_redirection() {
             if let Some(location) = response.headers().get(reqwest::header::LOCATION) {
