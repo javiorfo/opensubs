@@ -20,17 +20,20 @@ impl<'a> AsRef<SearchBy<'a>> for SearchBy<'a> {
 impl From<&SearchBy<'_>> for String {
     /// Converts a `SearchBy` variant into a URL string for querying OpenSubtitles.
     fn from(value: &SearchBy) -> Self {
+        let mut url = reqwest::Url::parse("https://www.opensubtitles.org/en/search2").unwrap();
         match value {
             SearchBy::Url(url) => url.to_string(),
-            SearchBy::Movie(movie) => format!(
-                "https://www.opensubtitles.org/en/search2?MovieName={}&id=8&action=search",
-                movie.trim()
-            ),
-            SearchBy::MovieAndFilter(movie, filter) => format!(
-                "https://www.opensubtitles.org/en/search2?MovieName={}&id=8&action=search{}",
-                movie.trim(),
-                filter.create()
-            ),
+            SearchBy::Movie(movie) => {
+                url.query_pairs_mut().append_pair("MovieName", movie.trim());
+                format!(
+                    "https://www.opensubtitles.org/en/search2?MovieName={}&id=8&action=search",
+                    url.as_str()
+                )
+            }
+            SearchBy::MovieAndFilter(movie, filter) => {
+                url.query_pairs_mut().append_pair("MovieName", movie.trim());
+                format!("{}&id=8&action=search{}", url.as_str(), filter.create())
+            }
         }
     }
 }

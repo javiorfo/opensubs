@@ -61,6 +61,9 @@ pub async fn search(search_by: SearchBy<'_>) -> crate::Result<Response> {
         if response.status().is_redirection() {
             if let Some(location) = response.headers().get(reqwest::header::LOCATION) {
                 url = location.to_str()?.to_string();
+                if !url.contains("www.opensubtitles.org") {
+                    url = format!("https://www.opensubtitles.org{}", url);
+                }
             }
         } else {
             return Response::create(&url, &response.text().await?, filter);

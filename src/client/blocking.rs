@@ -62,6 +62,9 @@ pub fn search(search_by: SearchBy) -> crate::Result<Response> {
         if response.status().is_redirection() {
             if let Some(location) = response.headers().get(reqwest::header::LOCATION) {
                 url = location.to_str()?.to_string();
+                if !url.contains("www.opensubtitles.org") {
+                    url = format!("https://www.opensubtitles.org{}", url);
+                }
             }
         } else {
             return Response::create(&url, &response.text()?, filter);
@@ -77,14 +80,14 @@ mod tests {
     #[test]
     fn test_search_by_movie_and_filter() {
         let result = search(SearchBy::MovieAndFilter(
-            "holdovers",
+            "81/2",
             crate::Filters::default()
                 .languages(&[crate::Language::Spanish, crate::Language::SpanishLA])
                 .build(),
         ));
 
         assert!(result.is_ok());
-        assert!(matches!(result.unwrap(), Response::Subtitle(_, _)));
+        assert!(matches!(result.unwrap(), Response::Movie(_)));
     }
 
     #[test]
